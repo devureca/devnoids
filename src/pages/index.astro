@@ -1,14 +1,12 @@
 ---
-import "./styles/global.css"
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>devnoids</title>
-  </head>
-  <body class="dark:bg-neutral-950 dark:text-neutral-100">
-    <h1 class="p-8 text-2xl tracking-[0.4em] uppercase">devnoids</h1>
-  </body>
-</html>
+<BaseLayout>
+  <section class="py-12">
+    <h1 class="font-display text-2xl uppercase">Bienvenido</h1>
+    <p class="mt-2">
+      Sitio en construcción. <a href="/blog" class="text-accent underline"> Este enlace es rojo</a> como en el original.
+    </p>
+  </section>
+</BaseLayout>

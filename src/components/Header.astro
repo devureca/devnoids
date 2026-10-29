@@ -1,0 +1,54 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+
+const nav = [
+  { href: "/blog", label: "Blog" },
+  { href: "/acerca", label: "Acerca de" },
+];
+---
+
+<header class="border-line border-b">
+  <div
+    class="mx-auto grid max-w-350 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-4 md:px-8"
+  >
+    <a
+      href="/"
+      class="font-display text-xs tracking-[0.5em] uppercase"
+      aria-label="devnoids, inicio"
+    >
+      devnoids
+    </a>
+
+    <nav aria-label="Principal">
+      <ul class="font-display flex gap-6 text-sm font-medium tracking-wide uppercase">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} class="hover:text-accent transition-colors">
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center justify-end gap-3">
+      <button type="button" aria-label="Buscar" class="hover:text-accent p-1">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+        >
+          <circle cx="10" cy="10" r="6.5"></circle>
+          <path d="M15 15l6 6"></path>
+        </svg>
+      </button>
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
