@@ -58,3 +58,30 @@
   --tw-prose-th-borders: var(--line);
   --tw-prose-td-borders: var(--line);
 }
+
+.pixel-img {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+
+.pixel-img img {
+  display: block;
+  image-rendering: auto;
+  opacity: 0;
+  transition:
+    opacity 400ms ease-out,
+    transform 500ms ease-out;
+}
+
+.pixel-img img.is-loaded {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-img img {
+    transition: none;
+  }
+}

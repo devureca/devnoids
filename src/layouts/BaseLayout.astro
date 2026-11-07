@@ -20,6 +20,13 @@ const fullTitle = title ? `${title} · devnoids` : "devnoids";
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    <noscript>
+  <style>
+    .pixel-img img {
+      opacity: 1 !important;
+    }
+  </style>
+</noscript>
     <script is:inline>
       (() => {
         try {

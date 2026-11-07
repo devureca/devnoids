@@ -1,0 +1,64 @@
+---
+import { Image, getImage } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  widths?: number[];
+  sizes?: string;
+  loading?: "lazy" | "eager";
+  fetchpriority?: "high" | "low" | "auto";
+  intrinsic?: boolean;
+  class?: string;
+  imgClass?: string;
+}
+
+const {
+  src,
+  alt,
+  widths,
+  sizes,
+  loading = "lazy",
+  fetchpriority,
+  intrinsic = false,
+  class: className,
+  imgClass,
+} = Astro.props;
+
+const tiny = await getImage({ src, width: 32, format: "webp", quality: 30 });
+
+const style = [
+  `background-image:url(${tiny.src})`,
+  intrinsic ? `aspect-ratio:${src.width}/${src.height}` : "",
+]
+  .filter(Boolean)
+  .join(";");
+---
+
+<div class:list={["pixel-img", className]} style={style}>
+  <Image
+    src={src}
+    alt={alt}
+    widths={widths}
+    sizes={sizes}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    class={imgClass}
+  />
+</div>
+
+<script>
+  const reveal = (img: HTMLImageElement) => img.classList.add("is-loaded");
+
+  document
+    .querySelectorAll<HTMLImageElement>(".pixel-img img")
+    .forEach((img) => {
+      if (img.complete && img.naturalWidth > 0) {
+        reveal(img);
+      } else {
+        img.addEventListener("load", () => reveal(img), { once: true });
+        img.addEventListener("error", () => reveal(img), { once: true });
+      }
+    });
+</script>
