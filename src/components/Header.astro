@@ -7,20 +7,35 @@ const nav = [
 ];
 ---
 
-<header class="border-line border-b">
+<header id="site-header" class="sticky top-0 z-50 border-b border-line bg-bg/90 backdrop-blur-md transition-all duration-300">
   <div
-    class="mx-auto grid max-w-350 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-4 md:px-8"
+    id="header-inner"
+    class="mx-auto max-w-350 px-4 py-4 md:px-16 transition-all duration-300 flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4"
   >
+    <button 
+      type="button" 
+      id="open-menu" 
+      aria-label="Abrir menú" 
+      class="md:hidden hover:text-accent p-1 cursor-pointer"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
     <a
       href="/"
-      class="font-display text-xs tracking-[0.5em] uppercase"
+      id="header-logo"
+      class="font-display text-xs tracking-[0.3em] md:tracking-[0.5em] uppercase transition-all duration-300 hover:text-accent text-center md:text-left absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0"
       aria-label="devnoids, inicio"
     >
       devnoids
     </a>
 
-    <nav aria-label="Principal">
-      <ul class="font-display flex gap-6 text-sm font-medium tracking-wide uppercase">
+    <nav aria-label="Principal" class="hidden md:block justify-self-center">
+      <ul id="header-nav" class="font-display flex gap-6 text-sm font-medium tracking-wide uppercase transition-all duration-300">
         {
           nav.map((item) => (
             <li>
@@ -33,17 +48,9 @@ const nav = [
       </ul>
     </nav>
 
-    <div class="flex items-center justify-end gap-3">
-      <button type="button" aria-label="Buscar" class="hover:text-accent p-1">
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-        >
+    <div class="flex items-center justify-end gap-4 z-10">
+      <button type="button" aria-label="Buscar" class="open-search-trigger hover:text-accent p-1 cursor-pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="10" cy="10" r="6.5"></circle>
           <path d="M15 15l6 6"></path>
         </svg>
@@ -52,3 +59,93 @@ const nav = [
     </div>
   </div>
 </header>
+
+<div 
+  id="mobile-menu" 
+  class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
+>
+  <div 
+    id="mobile-drawer" 
+    class="absolute top-0 left-0 bottom-0 w-80 bg-bg border-r border-line p-6 flex flex-col -translate-x-full transition-transform duration-300 shadow-2xl"
+  >
+    <div class="flex items-center justify-between pb-6 border-b border-line mb-6">
+      <span class="font-display text-xs uppercase tracking-[0.2em] text-muted">Browse</span>
+      <button 
+        type="button" 
+        id="close-menu" 
+        aria-label="Cerrar menú" 
+        class="text-fg hover:text-accent p-1 text-lg font-bold cursor-pointer"
+      >
+        ✕
+      </button>
+    </div>
+
+    <nav class="flex flex-col gap-4 font-display text-sm uppercase tracking-wider">
+      {
+        nav.map((item) => (
+          <a href={item.href} class="py-2 hover:text-accent transition-colors border-b border-line/50">
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="mt-auto pt-6 border-t border-line flex items-center justify-between">
+      <span class="text-xs text-muted font-display uppercase">Tema</span>
+      <ThemeToggle />
+    </div>
+  </div>
+</div>
+
+<script>
+  const header = document.getElementById('site-header');
+  const inner = document.getElementById('header-inner');
+  const logo = document.getElementById('header-logo');
+  const navList = document.getElementById('header-nav');
+  
+  const openMenuBtn = document.getElementById('open-menu');
+  const closeMenuBtn = document.getElementById('close-menu');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileDrawer = document.getElementById('mobile-drawer');
+
+  function openMobileMenu() {
+    mobileMenu?.classList.remove('opacity-0', 'pointer-events-none');
+    mobileMenu?.classList.add('opacity-100');
+    mobileDrawer?.classList.remove('-translate-x-full');
+  }
+
+  function closeMobileMenu() {
+    mobileMenu?.classList.remove('opacity-100');
+    mobileMenu?.classList.add('opacity-0', 'pointer-events-none');
+    mobileDrawer?.classList.add('-translate-x-full');
+  }
+
+  openMenuBtn?.addEventListener('click', openMobileMenu);
+  closeMenuBtn?.addEventListener('click', closeMobileMenu);
+  mobileMenu?.addEventListener('click', (e) => {
+    if (e.target === mobileMenu) closeMobileMenu();
+  });
+
+  function handleScroll() {
+    if (window.scrollY > 20) {
+      header?.classList.add('shadow-sm');
+      inner?.classList.remove('py-4', 'md:px-16');
+      inner?.classList.add('py-2', 'px-6', 'md:px-10');
+      logo?.classList.remove('tracking-[0.5em]');
+      logo?.classList.add('text-[10px]', 'tracking-[0.3em]');
+      navList?.classList.remove('text-sm');
+      navList?.classList.add('text-xs');
+    } else {
+      header?.classList.remove('shadow-sm');
+      inner?.classList.remove('py-2', 'px-6', 'md:px-10');
+      inner?.classList.add('py-4', 'md:px-16');
+      logo?.classList.remove('text-[10px]', 'tracking-[0.3em]');
+      logo?.classList.add('text-xs', 'tracking-[0.5em]');
+      navList?.classList.remove('text-xs');
+      navList?.classList.add('text-sm');
+    }
+  }
+
+  window.addEventListener('scroll', handleScroll);
+  handleScroll();
+</script>

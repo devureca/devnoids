@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PostGrid from "../../../components/PostGrid.astro";
+import { CATEGORIES, categoryLabel } from "../../../lib/categories";
+import { getPublishedPosts } from "../../../lib/posts";
+
+export function getStaticPaths() {
+  return CATEGORIES.map(({ value }) => ({ params: { category: value } }));
+}
+
+const { category } = Astro.params;
+const posts = (await getPublishedPosts()).filter(
+  (post) => post.data.category === category,
+);
+---
+
+<BaseLayout title={categoryLabel(category)}>
+  <PostGrid posts={posts} active={category} />
+</BaseLayout>

@@ -1,0 +1,27 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+  src: any;
+  alt: string;
+  width?: number;
+  height?: number;
+  class?: string;
+  quality?: number | string;
+}
+
+const { src, alt, width, height, class: className = "", quality } = Astro.props;
+---
+
+<div class="relative overflow-hidden bg-surface">
+  <Image
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    quality={quality}
+    class={`w-full h-full object-cover transition-all duration-700 data-[loaded=true]:opacity-100 ${className}`}
+    onload="this.setAttribute('data-loaded', 'true')"
+  />
+  <div class="absolute inset-0 bg-surface -z-10 animate-pulse"></div>
+</div>

@@ -1,8 +1,13 @@
 @import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
 @import "@fontsource/ubuntu/300.css";
 @import "@fontsource/ubuntu/400.css";
 @import "@fontsource/ubuntu/500.css";
 @import "@fontsource/ubuntu/700.css";
+
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -37,4 +42,19 @@
   --color-line: var(--line);
   --color-surface: var(--surface);
   --color-accent: var(--accent);
+}
+
+.prose {
+  --tw-prose-body: var(--fg);
+  --tw-prose-headings: var(--fg);
+  --tw-prose-links: var(--accent);
+  --tw-prose-bold: var(--fg);
+  --tw-prose-quotes: var(--fg);
+  --tw-prose-code: var(--fg);
+  --tw-prose-hr: var(--line);
+  --tw-prose-bullets: var(--muted);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
 }

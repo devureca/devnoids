@@ -1,0 +1,41 @@
+---
+import { CATEGORIES } from "../lib/categories";
+
+interface Props {
+  active?: string;
+}
+
+const { active } = Astro.props;
+
+const items = [
+  { href: "/blog", label: "Todo", value: undefined },
+  ...CATEGORIES.map((c) => ({
+    href: `/blog/categoria/${c.value}`,
+    label: c.label,
+    value: c.value as string | undefined,
+  })),
+];
+---
+
+<nav aria-label="Categorías">
+  <ul class="flex flex-wrap gap-2 md:flex-col md:gap-1">
+    {
+      items.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            aria-current={item.value === active ? "page" : undefined}
+            class:list={[
+              "font-display block px-4 py-2.5 text-sm transition-colors",
+              item.value === active
+                ? "bg-accent text-white"
+                : "bg-surface hover:text-accent",
+            ]}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
