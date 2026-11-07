@@ -1,0 +1,27 @@
+---
+import type { ImageMetadata } from "astro";
+import PixelImage from "./PixelImage.astro";
+
+interface Props {
+  src: ImageMetadata | string;
+  alt?: string;
+}
+
+const { src, alt = "" } = Astro.props;
+---
+
+{
+  typeof src === "string" ? (
+    <img src={src} alt={alt} loading="lazy" decoding="async" class="w-full" />
+  ) : (
+    <PixelImage
+      src={src}
+      alt={alt}
+      widths={[480, 720, 1080]}
+      sizes="(min-width: 720px) 720px, 100vw"
+      intrinsic
+      class="my-6 w-full"
+      imgClass="h-auto w-full"
+    />
+  )
+}
