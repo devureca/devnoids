@@ -1,0 +1,223 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Buscar">
+  <nav aria-label="Migas de pan" class="font-display text-muted py-6 text-xs">
+    <a href="/" class="hover:text-accent">devnoids</a>
+    <span class="mx-1">›</span>
+    <span class="text-fg">Buscar</span>
+  </nav>
+
+  <h1
+    class="font-display pb-6 text-3xl tracking-[0.12em] uppercase md:text-5xl"
+  >
+    Buscar
+  </h1>
+
+  <form id="search-form" action="/search" method="get" role="search" class="flex">
+    <input
+      id="q"
+      type="search"
+      name="q"
+      autocomplete="off"
+      placeholder="Escribe para buscar entradas..."
+      class="border-line bg-bg text-fg focus:border-accent h-[54px] min-w-0 flex-1 rounded-l border px-4 outline-none"
+    />
+    <button
+      type="submit"
+      aria-label="Buscar"
+      class="bg-accent flex h-[54px] w-14 items-center justify-center rounded-r text-white"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+      >
+        <circle cx="10" cy="10" r="6.5"></circle>
+        <path d="M15 15l6 6"></path>
+      </svg>
+    </button>
+  </form>
+
+  <hr class="border-line my-8" />
+
+  <p id="status" class="text-muted mb-6 text-sm" aria-live="polite"></p>
+
+  <div
+    id="results"
+    class="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4"
+  >
+  </div>
+
+  <noscript>
+    <p class="text-muted">La búsqueda necesita JavaScript activado.</p>
+  </noscript>
+</BaseLayout>
+
+<script>
+  type Item = {
+    id: string;
+    title: string;
+    description: string;
+    date: string;
+    category: string;
+    tags: string[];
+    alt: string;
+    thumb: string;
+    tiny: string;
+  };
+
+  type Indexed = Item & { titleN: string; hay: string };
+
+  const form = document.getElementById("search-form") as HTMLFormElement;
+  const input = document.getElementById("q") as HTMLInputElement;
+  const results = document.getElementById("results") as HTMLElement;
+  const status = document.getElementById("status") as HTMLElement;
+
+  const normalize = (text: string) =>
+    text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+  const escapeHtml = (text: string) =>
+    text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  let index: Indexed[] | null = null;
+  let loading: Promise<Indexed[]> | null = null;
+
+  function loadIndex() {
+    loading ??= fetch("/search.json")
+      .then((res) => res.json() as Promise<Item[]>)
+      .then((items) => {
+        index = items.map((item) => ({
+          ...item,
+          titleN: normalize(item.title),
+          hay: normalize(
+            [item.title, item.description, item.category, ...item.tags].join(
+              " ",
+            ),
+          ),
+        }));
+        return index;
+      });
+    return loading;
+  }
+
+  function search(query: string, data: Indexed[]) {
+    const terms = normalize(query).split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return [];
+
+    return data
+      .flatMap((item) => {
+        if (!terms.every((term) => item.hay.includes(term))) return [];
+        const score = terms.reduce(
+          (sum, term) => sum + (item.titleN.includes(term) ? 2 : 1),
+          0,
+        );
+        return [{ item, score }];
+      })
+      .sort(
+        (a, b) =>
+          b.score - a.score || b.item.date.localeCompare(a.item.date),
+      )
+      .map((entry) => entry.item);
+  }
+
+  function card(item: Item) {
+    return `
+      <article class="group flex flex-col">
+        <a href="/blog/${escapeHtml(item.id)}" class="block">
+          <div class="pixel-img bg-surface mb-3 aspect-video" style="background-image:url(${escapeHtml(item.tiny)})">
+            <img src="${escapeHtml(item.thumb)}" alt="${escapeHtml(item.alt)}" loading="lazy" decoding="async" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          </div>
+          <h2 class="font-display group-hover:text-accent mb-1 text-sm leading-snug font-medium transition-colors">${escapeHtml(item.title)}</h2>
+        </a>
+        <div class="text-muted flex items-center gap-2 text-[11px]">
+          <time datetime="${escapeHtml(item.date)}">${escapeHtml(item.date)}</time>
+          <span>·</span>
+          <span class="uppercase">${escapeHtml(item.category)}</span>
+        </div>
+      </article>`;
+  }
+
+  function reveal(img: HTMLImageElement) {
+    img.classList.add("is-loaded");
+  }
+
+  function render(items: Item[]) {
+    results.innerHTML = items.map(card).join("");
+    results.querySelectorAll<HTMLImageElement>(".pixel-img img").forEach((img) => {
+      if (img.complete && img.naturalWidth > 0) {
+        reveal(img);
+      } else {
+        img.addEventListener("load", () => reveal(img), { once: true });
+        img.addEventListener("error", () => reveal(img), { once: true });
+      }
+    });
+  }
+
+  let token = 0;
+
+  async function run(query: string) {
+    const current = ++token;
+    const clean = query.trim();
+
+    if (!clean) {
+      results.innerHTML = "";
+      status.textContent = "Escribe algo para buscar.";
+      return;
+    }
+
+    status.textContent = "Buscando...";
+    const data = await loadIndex();
+    if (current !== token) return;
+
+    const found = search(clean, data);
+    render(found);
+
+    const label = escapeHtml(clean);
+    status.innerHTML =
+      found.length === 0
+        ? `No hay resultados para “${label}”.`
+        : `${found.length} ${found.length === 1 ? "resultado" : "resultados"} para “${label}”.`;
+  }
+
+  function syncUrl(query: string) {
+    const url = new URL(window.location.href);
+    if (query.trim()) url.searchParams.set("q", query.trim());
+    else url.searchParams.delete("q");
+    history.replaceState(null, "", url);
+  }
+
+  let timer: number | undefined;
+
+  input.addEventListener("input", () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      syncUrl(input.value);
+      run(input.value);
+    }, 150);
+  });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    window.clearTimeout(timer);
+    syncUrl(input.value);
+    run(input.value);
+  });
+
+  const initial = new URLSearchParams(window.location.search).get("q") ?? "";
+  input.value = initial;
+  run(initial);
+  if (!initial) input.focus();
+</script>

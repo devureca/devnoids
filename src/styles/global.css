@@ -85,3 +85,7 @@
     transition: none;
   }
 }
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}
